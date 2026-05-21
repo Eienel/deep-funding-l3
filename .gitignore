@@ -1,0 +1,16 @@
+# Secrets
+.env
+
+# Generated artifacts
+data/features.csv
+data/competitor_submission.csv
+logs/
+
+# generated / intermediate data (pairs_to_predict.csv IS tracked)
+data/features.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
