@@ -219,8 +219,8 @@ def score_advanced(
         for dep in repo_deps:
             rows.append(
                 {
-                    "dependency": dep,
-                    "repo": repo,
+                    "dependency": _to_url(dep),
+                    "repo": _to_url(repo),
                     "weight": raw[dep] / total,
                 }
             )
