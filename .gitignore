@@ -1,0 +1,16 @@
+# Secrets
+.env
+
+# Generated artifacts
+data/features.csv
+submission.csv
+logs/
+
+# Input data (user-provided)
+data/pairs_to_predict.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
