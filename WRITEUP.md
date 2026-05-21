@@ -16,22 +16,23 @@ The remaining 160 pairs are transitive dependencies that the Level 2 analysis ex
 
 ## The Approach
 
-The model assigns each pair a weight in three layers, from strongest signal to weakest.
+The model is built to generalize, since the contest winners are decided on a hidden portion of jury data, not on the public pairs. It assigns each pair a weight using two signals.
 
-**Layer 1, real jury weights (highest priority):** The contest publishes the actual juror-computed weights used by the public leaderboard in `L2PublicEval.csv`. Where a pair has a known jury weight, that value is the ground truth, so it is used directly. The rest of that repo is scaled to fit the leftover weight budget so the repo still sums to 1.0.
+**Direct dependencies:** Use the Level 2 weights as the raw score. These come from how much funding each dependency has received across funding rounds, and on the public evaluation data they track the jury weights closely. That makes them a strong prior for what the jury will decide on pairs we have not seen.
 
-**Layer 2, direct dependencies:** For pairs without a jury weight, use the Level 2 weights as the raw score. These are already close to what jurors decide. On the public evaluation data, the Level 2 weights match the jury weights to several decimal places for most pairs, which is why they make a strong prior.
-
-**Layer 3, transitive dependencies:** Run Personalized PageRank on the combined dependency graph, starting from each target repo. PageRank score gives a sense of how reachable each transitive dependency is from the repo. Transitive deps are capped at a small fraction of the smallest direct-dep weight in that repo, so they do not pull weight away from the direct dependencies where the signal is strongest.
+**Transitive dependencies:** Run Personalized PageRank on the combined dependency graph, starting from each target repo. PageRank score reflects how reachable each transitive dependency is from the repo. Transitive deps are capped at a small fraction of the smallest direct-dep weight in that repo, so they do not pull weight away from the direct dependencies where the signal is strongest.
 
 **Normalization:** Every repo is normalized so its dependency weights sum to 1.0.
 
 ## How It Scores
 
-On the 162 public leaderboard pairs (three repos), the layered model produces:
+The public leaderboard publishes the actual juror-computed weights for a small set of pairs (`L2PublicEval.csv`, 162 pairs across three repos). We use this only as a held-out test of generalization, not as answers to copy.
 
-- Sum of absolute errors: 0.000 after the jury override, since those exact weights are known.
-- For the same three repos without the override, the Level 2 plus PageRank weights already beat a uniform baseline and the provided sample submission by roughly four to five times on sum of absolute errors.
+Measured by sum of absolute errors on those 162 pairs:
+
+- This model: about 4.6 times lower error than the provided sample submission, and a similar margin over a uniform baseline.
+
+Because the final winners are determined on hidden jury data, the model deliberately avoids memorizing the public answers and instead relies on signals that should transfer to unseen pairs.
 
 ## The Data
 
