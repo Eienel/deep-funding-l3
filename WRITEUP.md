@@ -138,7 +138,8 @@ mechanism, and we want to state that plainly rather than overclaim.
 ```bash
 pip install -r requirements.txt
 python run_ai_juror_pipeline.py
-python -c "from src.local_score import score_file; score_file('submission_ai_juror_full.csv')"
+python -c "from src.local_score import score_file; \
+           score_file('submission_ai_juror_full.csv')"
 ```
 
 - `data/claude_juror_corrections.py` holds the juror's head corrections for every
