@@ -59,10 +59,15 @@ ORIG = {
 }
 
 
+# Level II's repo list uses the older web3j org name than Level I's list.
+NAME_OVERRIDE = {"LFDT-web3j/web3j": "hyperledger-web3j/web3j"}
+
+
 def main() -> None:
     elo = pd.read_csv("level1/data/elo_phase2.csv")
     rows, missing = [], []
     for item in elo["item"]:
+        item = NAME_OVERRIDE.get(item, item)
         o = ORIG.get(item.lower())
         if o is None:
             missing.append(item)
