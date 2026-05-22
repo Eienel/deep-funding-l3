@@ -99,10 +99,11 @@ flows to that dependency, based on how *central and irreplaceable* it is to what
 the repository actually does.
 
 Below are the repository's top dependencies with a baseline weight derived from \
-funding/usage data. That baseline is often miscalibrated: it tends to UNDERRATE \
-critical, hard-to-replace Ethereum infrastructure (consensus crypto, KZG, p2p \
-networking, the core web3 client libraries) and OVERRATE generic, easily \
-replaceable utilities. Co-equal core infrastructure should get similar weights.
+funding/usage data. That baseline reflects historical funding/usage, NOT \
+necessarily technical centrality, so treat it only as a starting point. Judge \
+each dependency on its own merits: how core and irreplaceable it is to what THIS \
+repository actually does. Dependencies that are equally central should receive \
+similar weights; ones that are easily swapped out should receive less.
 
 Repository: {repo_short}
 Baseline weights:
