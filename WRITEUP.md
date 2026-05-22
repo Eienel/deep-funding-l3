@@ -1,5 +1,8 @@
 # Deep Funding Level III: How We Built Our Dependency Weight Model
 
+**Open-source code (fully reproducible):**
+https://github.com/Eienel/deep-funding-l3
+
 ## The Problem in Plain Terms
 
 Every software project depends on other projects. The contest gives us 83
@@ -134,6 +137,8 @@ but we cannot verify them directly. This is an informed bet built on a validated
 mechanism, and we want to state that plainly rather than overclaim.
 
 ## How to Reproduce Our Results
+
+Everything is open source at https://github.com/Eienel/deep-funding-l3
 
 ```bash
 pip install -r requirements.txt

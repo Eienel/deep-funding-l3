@@ -3,6 +3,8 @@
 Submission for the Deep Funding Contest Level III on joinpond.ai ($5,000 prize,
 deadline May 26 2026).
 
+Repository: https://github.com/Eienel/deep-funding-l3
+
 ## What This Does
 
 Assigns a weight to each (dependency, repo) pair so that all weights for a given
