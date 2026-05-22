@@ -1,14 +1,28 @@
-"""Level II: originality score (0-1) per repo = share of credit kept by the
-repo itself vs. flowing to its dependencies.
+"""Level II: originality score (0-1) per repo.
 
-No public originality labels exist, so there is nothing to train/validate
-against. Instead this uses direct LLM-juror assessment against Pond's rubric
-(0.2 = fork/wrapper, 0.5 = heavy deps + substantial own work, 0.8 = mostly
-original), informed by what each repo actually is in the Ethereum ecosystem.
+Originality is a subjective jury judgment that does not reduce to a graph
+formula -- its correlation with dependency-weight sum and dependency count is
+both < 0.2, and the sign is counter-intuitive (repos that route all credit to
+dependencies tend to score *higher*). With no public originality labels to fit
+against, we combine two independent expert estimates of each repo:
+
+  1. LLM-juror assessment against Pond's rubric (0.2 = fork/wrapper, 0.5 = heavy
+     deps + substantial own work, 0.8 = mostly original), keyed by what each
+     repo actually is in the Ethereum ecosystem (the ORIG table below).
+  2. The organizers' provided baseline (originality-predictions.csv).
+
+The submitted score is the mean of the two. Averaging two independent
+estimators reduces error variance on the held-out (private) test set that the
+prize is scored on -- a more defensible choice than hand-tuning 98 numbers to a
+public board we cannot validate against.
 """
 
 from __future__ import annotations
 import pandas as pd
+
+REPOS = "level2/data/repos_to_predict.csv"
+BASELINE = "level2/data/originality-predictions.csv"
+OUT = "level2/submission_originality.csv"
 
 # originality keyed by lowercase owner/repo
 ORIG = {
@@ -59,19 +73,35 @@ ORIG = {
 }
 
 
+def _key(url: str) -> str:
+    return str(url).replace("https://github.com/", "").strip().lower()
+
+
 def main() -> None:
-    elo = pd.read_csv("level1/data/elo_phase2.csv")
-    rows, missing = [], []
-    for item in elo["item"]:
-        o = ORIG.get(item.lower())
-        if o is None:
-            missing.append(item)
-            o = 0.5
-        rows.append({"repo": "https://github.com/" + item, "originality": o})
-    if missing:
-        print("UNMATCHED (defaulted 0.5):", missing)
+    repos = pd.read_csv(REPOS)
+    base = pd.read_csv(BASELINE)
+    base_map = {_key(r): float(o) for r, o in zip(base["repo"], base["originality"])}
+
+    rows, no_juror, no_base = [], [], []
+    for url in repos["repo"]:
+        k = _key(url)
+        juror = ORIG.get(k)
+        base_o = base_map.get(k)
+        if juror is None:
+            no_juror.append(k)
+        if base_o is None:
+            no_base.append(k)
+        ests = [v for v in (juror, base_o) if v is not None]
+        o = round(sum(ests) / len(ests), 4) if ests else 0.5
+        rows.append({"repo": url, "originality": o})
+
+    if no_juror:
+        print(f"no juror estimate ({len(no_juror)}, baseline only):", no_juror)
+    if no_base:
+        print(f"no baseline ({len(no_base)}, juror only):", no_base)
+
     out = pd.DataFrame(rows)
-    out.to_csv("level2/submission_originality.csv", index=False)
+    out.to_csv(OUT, index=False)
     print(f"wrote {len(out)} rows; range [{out['originality'].min()}, {out['originality'].max()}], mean {out['originality'].mean():.3f}")
 
 
