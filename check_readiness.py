@@ -114,33 +114,33 @@ def test_bedrock_connection() -> Tuple[bool, str]:
             return False, f"API connection failed: {e}"
 
 
-def test_huber_log() -> Tuple[bool, str]:
-    """Test Huber-log aggregation method."""
+def test_blend_math() -> Tuple[bool, str]:
+    """Test the AI-juror blend math (Claude head corrections + L2 tail)."""
     try:
-        from src.ai_juror_generator import derive_weights_from_comparisons
+        from src.ai_juror_generator import blend_corrections
 
-        # Mock comparisons
-        comparisons = [
-            ("https://github.com/a/a", "https://github.com/b/b", 1, 1.5),
-            ("https://github.com/a/a", "https://github.com/c/c", 1, 2.0),
-            ("https://github.com/b/b", "https://github.com/c/c", 0, 1.2),
-        ]
+        l2 = {
+            "https://github.com/x/big": 0.6,
+            "https://github.com/x/mid": 0.3,
+            "https://github.com/x/small": 0.1,
+        }
+        # Claude corrects the head: shrink "big", boost "mid".
+        corrections = {
+            "https://github.com/x/big": 0.4,
+            "https://github.com/x/mid": 0.5,
+        }
+        weights = blend_corrections(l2, corrections)
 
-        weights = derive_weights_from_comparisons(comparisons)
-
-        # Check normalization
         total = sum(weights.values())
         if abs(total - 1.0) > 1e-6:
             return False, f"Weights don't sum to 1.0 (got {total})"
+        if weights["https://github.com/x/mid"] <= weights["https://github.com/x/big"]:
+            return False, "Correction not applied (mid should exceed big)"
 
-        # Check that weights are reasonable
-        if all(w < 1e-8 for w in weights.values()):
-            return False, "All weights are trivial"
-
-        return True, f"Huber-log working ({len(weights)} deps normalized)"
+        return True, f"Blend math working ({len(weights)} deps normalized)"
 
     except Exception as e:
-        return False, f"Huber-log test failed: {e}"
+        return False, f"Blend math test failed: {e}"
 
 
 def check_validation_data() -> Tuple[bool, str]:
@@ -181,7 +181,7 @@ def main() -> None:
         ("Python imports", check_imports),
         ("Bedrock credentials", check_bedrock_credentials),
         ("Validation data", check_validation_data),
-        ("Huber-log method", test_huber_log),
+        ("Blend math", test_blend_math),
         ("Bedrock API connection", test_bedrock_connection),  # This one takes longest
     ]
 
